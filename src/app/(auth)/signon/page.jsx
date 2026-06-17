@@ -11,6 +11,7 @@ import { TextDivider } from '@/components/TextDivider';
 import { Providers } from '@/components/Providers';
 import Link from 'next/link';
 import { Login } from '@/components/icons/Login';
+import { createUser } from '@/actions';
 
 export default async function SignOn() {
   return (
@@ -21,7 +22,7 @@ export default async function SignOn() {
       <div className={styles.container}>
         <h1>Cadastro</h1>
         <h2>Olá! Preencha seus dados.</h2>
-        <form className={styles.form}>
+        <form className={styles.form} action={createUser}>
           <div>
             <Label>Nome</Label>
             <Input name="name" id="name" placeholder="Nome completo" required />
