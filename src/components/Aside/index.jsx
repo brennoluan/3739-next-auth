@@ -9,8 +9,11 @@ import { Feed } from '../icons/Feed';
 import { Account } from '../icons/Account';
 import { Info } from '../icons/Info';
 import { Login } from '../icons/Login';
+import { getServerSession } from 'next-auth';
+import { options } from '@/app/api/auth/[...nextauth]/options';
 
-export const Aside = () => {
+export const Aside = async () => {
+  const session = await getServerSession(options);
   return (
     <aside className={styles.aside}>
       {/* <img src="/logo.png" alt="Logo da Code Connect" /> */}
@@ -44,12 +47,22 @@ export const Aside = () => {
               Sobre nós
             </AsideLink>
           </li>
-          <li>
-            <AsideLink href="/login?">
-              <Login />
-              Login
-            </AsideLink>
-          </li>
+          {!session && (
+            <li>
+              <AsideLink href="/api/auth/signin">
+                <Login />
+                Login
+              </AsideLink>
+            </li>
+          )}
+          {session && (
+            <li>
+              <AsideLink href="/api/auth/signout">
+                <Login />
+                Logout
+              </AsideLink>
+            </li>
+          )}
         </ul>
       </nav>
     </aside>
