@@ -2,9 +2,14 @@ import { PrismaAdapter } from '@auth/prisma-adapter';
 import GitHubProvider from 'next-auth/providers/github';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import db from '../../../../../prisma/db';
+import bcrypt from 'bcrypt';
 
 export const options = {
   adapter: PrismaAdapter(db),
+  session: {
+    strategy: 'jwt',
+    maxAge: 3000,
+  },
   providers: [
     GitHubProvider({
       clientId: process.env.GITHUB_ID,
@@ -23,12 +28,40 @@ export const options = {
           placeholder: 'Digite sua senha',
         },
       },
+      async authorize(credentials) {
+        try {
+          const foundUser = await db.user.findFirst({
+            where: {
+              email: credentials.email,
+            },
+          });
+
+          if (foundUser) {
+            console.log('User encontrado');
+            const passMatch = bcrypt.compareSync(
+              credentials.password,
+              foundUser.password,
+            );
+
+            if (passMatch) {
+              console.log('usuario correto');
+
+              delete foundUser.password;
+
+              return foundUser;
+            }
+          }
+        } catch (error) {
+          console.log('Erro ao autorizar um usuario', error);
+        }
+        return null;
+      },
     }),
   ],
   callbacks: {
-    async session({ session, user }) {
+    async session({ session, token }) {
       if (session?.user) {
-        session.user.id = user.id;
+        session.user.id = parseInt(token.sub);
       }
       return session;
     },
